@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "unifier"
+version = "0.1.0"
+description = "Personal project project"
+authors = ["João Pedro <pedrochaveslimas3@gmail.com>"]
+maintainers = ["Sosolidkk <pedrochaveslimas3@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/sosolidkk/manga-unifier"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+django = "^3.1.6"
+djangorestframework = "^3.11.1"
+django-filter = "^2.4.0"
+psycopg2-binary = "^2.8.6"
+pydantic = {extras = ["email"], version = "^1.7.2"}
+gunicorn = "^20.0.4"
+gevent = "^20.12.1"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+pycodestyle = "^2.6.0"
+isort = "^5.3.2"
+flake8 = "^3.8.3"
+mypy = "^0.782"
+black = "^19.10b0"
+tox = "^3.21.1"
+faker = "^5.6.0"
+factory-boy = "^3.2.0"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+skipsdist = true
+envlist =
+    {py38}-django
+
+[testenv]
+passenv = *
+deps = poetry
+commands =
+    poetry install --no-root -v
+    python manage.py test
+"""
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
