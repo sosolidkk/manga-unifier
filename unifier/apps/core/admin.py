@@ -1,3 +1,113 @@
 from django.contrib import admin
+from unifier.apps.core.models import Image, Manga, MangaChapter, Novel, NovelChapter, Platform
 
-# Register your models here.
+
+class ImageInline(admin.TabularInline):
+    model = Image
+
+
+class MangaChapterInline(admin.TabularInline):
+    model = MangaChapter
+
+
+class NovelChapterInline(admin.TabularInline):
+    model = NovelChapter
+
+
+@admin.register(Image)
+class ImageAdmin(admin.ModelAdmin):
+    list_display = (
+        "path",
+        "url",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("url",)
+
+
+@admin.register(Manga)
+class MangaAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "year",
+        "author",
+        "chapters_count",
+        "rate",
+        "cover_tag",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+    )
+    search_fields = (
+        "title",
+        "year",
+    )
+    inlines = (MangaChapterInline,)
+
+
+@admin.register(MangaChapter)
+class MangaChapterAdmin(admin.ModelAdmin):
+    list_display = (
+        "number",
+        "title",
+        "language",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("title",)
+    inlines = (ImageInline,)
+
+
+@admin.register(Novel)
+class NovelAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "year",
+        "author",
+        "chapters_count",
+        "rate",
+        "cover_tag",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+        "year",
+    )
+    search_fields = (
+        "title",
+        "year",
+    )
+    inlines = (NovelChapterInline,)
+
+
+@admin.register(NovelChapter)
+class NovelChapterAdmin(admin.ModelAdmin):
+    list_display = (
+        "number",
+        "title",
+        "language",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("title",)
+
+
+@admin.register(Platform)
+class PlatformAdmin(admin.ModelAdmin):
+    list_display = (
+        "url",
+        "name",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+        "name",
+    )
+    search_fields = ("name",)
