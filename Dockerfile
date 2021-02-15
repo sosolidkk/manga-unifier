@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY . /app
 
+# Set enviroment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 # Upgrade pip and build packages
 RUN pip install --upgrade pip setuptools wheel
 
