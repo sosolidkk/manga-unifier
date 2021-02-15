@@ -1,3 +1,3 @@
 release: python manage.py migrate
 
-web: gunicorn djheroku.wsgi --log-file -
+web: gunicorn unifier.wsgi --log-file -
