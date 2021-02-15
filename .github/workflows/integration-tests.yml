@@ -5,9 +5,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      - DB_HOST: ${{ secrets.DB_HOST }}
-      - DB_PORT: ${{ secrets.DB_PORT }}
-      - DJANGO_BIND_PORT: ${{ secrets.DJANGO_BIND_PORT }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DJANGO_BIND_PORT: ${{ secrets.DJANGO_BIND_PORT }}
     steps:
       - name: Working copy
         uses: actions/checkout@v1
