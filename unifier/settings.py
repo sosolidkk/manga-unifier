@@ -8,6 +8,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 
+import dj_database_url
+
 from unifier.apps.core.apps import CoreConfig
 from unifier.support.django_helpers import eval_env_as_boolean, getenv_or_raise_exception
 
@@ -82,16 +84,9 @@ WSGI_APPLICATION = "unifier.wsgi.application"
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": getenv_or_raise_exception("DB_ENGINE"),
-        "NAME": getenv_or_raise_exception("DB_DATABASE"),
-        "USER": getenv_or_raise_exception("DB_USER"),
-        "HOST": getenv_or_raise_exception("DB_HOST"),
-        "PORT": getenv_or_raise_exception("DB_PORT"),
-        "PASSWORD": getenv_or_raise_exception("DB_PASSWORD"),
-    }
+    # If DATABASE_URL environment variable isn't set, use Docker Compose Postgres database.
+    "default": dj_database_url.config(default="postgres://postgres:postgres@db:5432/postgres", conn_max_age=600,)
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

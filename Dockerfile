@@ -8,7 +8,7 @@ COPY . /app
 RUN pip install --upgrade pip setuptools wheel
 
 # Install package manager
-RUN pip install poetry cryptography==2.8
+RUN pip install poetry
 
 # Copy dependency definition to cache
 COPY poetry.lock pyproject.toml README.md /app/
