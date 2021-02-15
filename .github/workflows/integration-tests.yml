@@ -9,6 +9,8 @@ jobs:
       DB_PORT: ${{ secrets.DB_PORT }}
       DJANGO_BIND_PORT: ${{ secrets.DJANGO_BIND_PORT }}
     steps:
+      - name: env values
+        run: echo "${{ secrets.DB_HOST }} ${{ secrets.DB_PORT }} ${{ secrets.DJANGO_BIND_PORT }}"
       - name: Working copy
         uses: actions/checkout@v1
         with:
