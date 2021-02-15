@@ -1,0 +1,13 @@
+name: docker-compose-actions-workflow
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Build the stack
+        run: docker-compose up --exit-code-from integration-tests integration-tests
