@@ -1,4 +1,4 @@
-name: docker-compose-actions-workflow
+name: Integration Tests
 on: [pull_request]
 
 jobs:
@@ -6,8 +6,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Working copy
         uses: actions/checkout@v1
-
-      - name: Build the stack
-        run: docker-compose up --exit-code-from integration-tests integration-tests
+        with:
+          fetch-depth: 1
+      - name: 🛠 Build project
+        run: docker-compose build --no-cache  integration-tests
+      - name: Tests
+        run: docker-compose up --exit-code-from  integration-tests  integration-tests
