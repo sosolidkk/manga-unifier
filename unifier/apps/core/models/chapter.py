@@ -10,6 +10,10 @@ class Language(models.IntegerChoices):
 
 
 class MangaChapter(StandardModelMixin):
+    class Meta:
+        verbose_name = "Manga Chapter"
+        verbose_name_plural = "Manga Chapters"
+
     number = models.PositiveIntegerField(blank=False, null=False, verbose_name="Chapter number")
     title = models.CharField(blank=False, null=False, max_length=256, verbose_name="Chapter title")
     language = models.PositiveSmallIntegerField(
@@ -17,8 +21,15 @@ class MangaChapter(StandardModelMixin):
     )
     manga = models.ForeignKey(Manga, on_delete=models.CASCADE, related_name="manga_chapters")
 
+    def __str__(self):
+        return f"{self.number} - {self.title}"
+
 
 class NovelChapter(StandardModelMixin):
+    class Meta:
+        verbose_name = "Novel Chapter"
+        verbose_name_plural = "Novel Chapters"
+
     number = models.PositiveIntegerField(blank=False, null=False, verbose_name="Chapter number")
     title = models.CharField(blank=False, null=False, max_length=256, verbose_name="Chapter title")
     language = models.PositiveSmallIntegerField(
@@ -26,3 +37,6 @@ class NovelChapter(StandardModelMixin):
     )
     body = models.TextField(blank=False, null=False, verbose_name="Novel content")
     novel = models.ForeignKey(Novel, on_delete=models.CASCADE, related_name="novel_chapters")
+
+    def __str__(self):
+        return f"{self.number} - {self.title}"
