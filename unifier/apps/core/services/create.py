@@ -61,6 +61,20 @@ class CreatePlatformService(Command):
         self._payload = payload
 
     def execute(self) -> Platform:
+        mangas = self._payload.pop("mangas", None)
+        novels = self._payload.pop("novels", None)
+
         logger.info(f"Creating platform: {self._payload}")
         platform = Platform.objects.create(**self._payload)
+
+        if mangas is not None:
+            logger.info(f"Creating mangas for platform: {platform}")
+            for manga in mangas:
+                platform.mangas.add(manga)
+
+        if novels is not None:
+            logger.info(f"Creating novels for platform: {platform}")
+            for novel in novels:
+                platform.novels.add(novel)
+
         return platform
