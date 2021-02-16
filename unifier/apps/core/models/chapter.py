@@ -24,5 +24,5 @@ class NovelChapter(StandardModelMixin):
     language = models.PositiveSmallIntegerField(
         choices=Language.choices, default=Language.PORTUGUESE_BR, verbose_name="Chapter language"
     )
-    body = models.TextField(blank=False, null=False)
+    body = models.TextField(blank=False, null=False, verbose_name="Novel content")
     novel = models.ForeignKey(Novel, on_delete=models.CASCADE, related_name="novel_chapters")

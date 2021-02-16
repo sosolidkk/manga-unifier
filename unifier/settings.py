@@ -34,7 +34,7 @@ DJANGO_ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS")
 if DJANGO_ALLOWED_HOSTS:
     ALLOWED_HOSTS = DJANGO_ALLOWED_HOSTS.split(",")
 else:
-    ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1"]
+    ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1", "0.0.0.0"]
 
 # Application definition
 
