@@ -8,7 +8,7 @@ class Image(StandardModelMixin):
         verbose_name = "Image"
         verbose_name_plural = "Images"
 
-    path = models.URLField(blank=False, null=False, max_length=256, verbose_name="Image path URL")
+    path = models.URLField(blank=True, null=True, max_length=256, verbose_name="Image path URL")
     url = models.URLField(blank=False, null=False, max_length=256, verbose_name="Image URL")
     manga_chapter = models.ForeignKey(MangaChapter, on_delete=models.CASCADE, related_name="images")
 
