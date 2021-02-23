@@ -5,6 +5,7 @@ from unifier.support.utils import parse_url_as_image_tag
 
 class Manga(StandardModelMixin):
     class Meta:
+        ordering = ("year",)
         verbose_name = "Manga"
         verbose_name_plural = "Mangas"
 

@@ -11,6 +11,7 @@ class Language(models.IntegerChoices):
 
 class MangaChapter(StandardModelMixin):
     class Meta:
+        ordering = ("number",)
         verbose_name = "Manga Chapter"
         verbose_name_plural = "Manga Chapters"
 
@@ -27,6 +28,7 @@ class MangaChapter(StandardModelMixin):
 
 class NovelChapter(StandardModelMixin):
     class Meta:
+        ordering = ("number",)
         verbose_name = "Novel Chapter"
         verbose_name_plural = "Novel Chapters"
 
