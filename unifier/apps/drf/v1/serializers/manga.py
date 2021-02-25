@@ -1,12 +1,6 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-from unifier.apps.core.models import Image, Manga, MangaChapter
-
-
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ["path", "url"]
+from unifier.apps.core.models import Manga, MangaChapter
 
 
 class MangaChapterSerializer(serializers.ModelSerializer):
@@ -21,8 +15,6 @@ class MangaChapterSerializer(serializers.ModelSerializer):
 
 
 class MangaChapterDetailSerializer(serializers.ModelSerializer):
-    images = ImageSerializer(many=True, read_only=True)
-
     class Meta:
         model = MangaChapter
         fields = MangaChapterSerializer.Meta.fields[:-1] + ["images"]

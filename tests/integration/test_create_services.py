@@ -1,38 +1,17 @@
 from decimal import Decimal
 
 from django.test import TestCase
-from tests.factories.chapter import MangaChapterFactory
 from tests.factories.manga import MangaFactory
 from tests.factories.novel import NovelFactory
-from unifier.apps.core.models import Image, Manga, MangaChapter, Novel, NovelChapter, Platform
+from unifier.apps.core.models import Manga, MangaChapter, Novel, NovelChapter, Platform
 from unifier.apps.core.models.chapter import Language
 from unifier.apps.core.services import (
-    CreateImageService,
     CreateMangaChapterService,
     CreateMangaService,
     CreateNovelChapterService,
     CreateNovelService,
     CreatePlatformService,
 )
-
-
-class CreateImageServiceTest(TestCase):
-    def setUp(self):
-        self.manga_chapter = MangaChapterFactory()
-        self.payload = {
-            "path": "/random/image/path.png",
-            "url": "https://my-image.com",
-            "manga_chapter": self.manga_chapter,
-        }
-
-    def test_create_image_service_with_valid_payload(self):
-        CreateImageService(self.payload).execute()
-
-        assert 1 == Image.objects.count()
-
-        assert "/random/image/path.png" == Image.objects.first().path
-        assert "https://my-image.com" == Image.objects.first().url
-        assert self.manga_chapter == Image.objects.first().manga_chapter
 
 
 class CreateMangaChapterServiceTest(TestCase):

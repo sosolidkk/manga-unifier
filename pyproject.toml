@@ -19,6 +19,7 @@ pydantic = {extras = ["email"], version = "^1.7.2"}
 gunicorn = "^20.0.4"
 gevent = "^20.12.1"
 requests = "^2.25.1"
+beautifulsoup4 = "^4.9.3"
 
 [tool.poetry.dev-dependencies]
 pycodestyle = "^2.6.0"
