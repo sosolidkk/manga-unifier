@@ -1,9 +1,5 @@
 from django.contrib import admin
-from unifier.apps.core.models import Image, Manga, MangaChapter, Novel, NovelChapter, Platform
-
-
-class ImageInline(admin.TabularInline):
-    model = Image
+from unifier.apps.core.models import Manga, MangaChapter, Novel, NovelChapter, Platform
 
 
 class MangaChapterInline(admin.TabularInline):
@@ -12,19 +8,6 @@ class MangaChapterInline(admin.TabularInline):
 
 class NovelChapterInline(admin.TabularInline):
     model = NovelChapter
-
-
-@admin.register(Image)
-class ImageAdmin(admin.ModelAdmin):
-    list_display = (
-        "path",
-        "url",
-    )
-    list_filter = (
-        "created_at",
-        "updated_at",
-    )
-    search_fields = ("url",)
 
 
 @admin.register(Manga)
@@ -60,7 +43,6 @@ class MangaChapterAdmin(admin.ModelAdmin):
         "updated_at",
     )
     search_fields = ("title",)
-    inlines = (ImageInline,)
 
 
 @admin.register(Novel)

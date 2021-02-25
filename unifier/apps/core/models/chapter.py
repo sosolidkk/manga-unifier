@@ -20,6 +20,7 @@ class MangaChapter(StandardModelMixin):
     language = models.PositiveSmallIntegerField(
         choices=Language.choices, default=Language.PORTUGUESE_BR, verbose_name="Chapter language"
     )
+    images = models.JSONField(default=list, verbose_name="Images")
     manga = models.ForeignKey(Manga, on_delete=models.CASCADE, related_name="manga_chapters")
 
     def __str__(self):

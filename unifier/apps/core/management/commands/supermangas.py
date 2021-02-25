@@ -6,9 +6,9 @@ from bs4.element import ResultSet, Tag
 from django.core.management.base import BaseCommand
 from requests.models import Response
 from rest_framework import status
-from unifier.apps.core.models import Manga, Platform
+from unifier.apps.core.models import Manga, MangaChapter, Platform
 from unifier.apps.core.models.chapter import Language
-from unifier.apps.core.services import CreateImageService, CreateMangaChapterService
+from unifier.apps.core.services import BulkCreateMangaChapterService
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +57,9 @@ class Command(BaseCommand):
                     self._get_chapter_images(chapter, response)
                     self.stdout.write(f"Images for chapter {chapter['number']}")
 
-                for chapter in chapters_content:
-                    images = chapter.pop("images")
-                    manga_chapter = CreateMangaChapterService({**chapter, "manga": manga}).execute()
-                    for image in images:
-                        CreateImageService({"url": image, "manga_chapter": manga_chapter}).execute()
+                BulkCreateMangaChapterService(
+                    [MangaChapter(**{**chapter, "manga": manga}) for chapter in chapters_content]
+                ).execute()
 
     def _is_valid_response(self, response: Response) -> bool:
         if response.status_code == status.HTTP_200_OK:

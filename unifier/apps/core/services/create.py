@@ -1,19 +1,9 @@
 import logging
 
-from unifier.apps.core.models import Image, Manga, MangaChapter, Novel, NovelChapter, Platform
+from unifier.apps.core.models import Manga, MangaChapter, Novel, NovelChapter, Platform
 from unifier.apps.core.services.base import Command
 
 logger = logging.getLogger(__name__)
-
-
-class CreateImageService(Command):
-    def __init__(self, payload: dict) -> None:
-        self._payload = payload
-
-    def execute(self) -> Image:
-        logger.info(f"Creating image: {self._payload}")
-        image = Image.objects.create(**self._payload)
-        return image
 
 
 class CreateMangaService(Command):
@@ -34,6 +24,15 @@ class CreateMangaChapterService(Command):
         logger.info(f"Creating manga chapter: {self._payload}")
         manga_chapter = MangaChapter.objects.create(**self._payload)
         return manga_chapter
+
+
+class BulkCreateMangaChapterService(Command):
+    def __init__(self, payload: list) -> None:
+        self._payload = payload
+
+    def execute(self) -> None:
+        logger.info(f"Bulk creating manga chapters: {self._payload}")
+        MangaChapter.objects.bulk_create(self._payload)
 
 
 class CreateNovelService(Command):
