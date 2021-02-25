@@ -1,5 +1,5 @@
 from unifier.apps.core.services.create import (
-    CreateImageService,
+    BulkCreateMangaChapterService,
     CreateMangaChapterService,
     CreateMangaService,
     CreateNovelChapterService,
