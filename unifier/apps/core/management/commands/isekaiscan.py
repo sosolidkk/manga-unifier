@@ -43,12 +43,12 @@ class Command(BaseCommand):
                 post_content = content.find("div", {"class": "post-content"})
                 post_status = content.find("div", {"class": "post-status"})
 
-                # 0 - Rating, 1 - Rank, 2 - Alternative, 3 - Author, 4 - Genre
                 post_content_items = post_content.find_all("div", {"class": "post-content_item"})
-                manga_info["author"] = post_content_items[3].find("div", {"class": "author-content"}).text.strip()
-                manga_info["tags"] = (
-                    post_content_items[4].find("div", {"class": "genres-content"}).text.strip().split(",")
-                )
+                for item in post_content_items:
+                    if "author" in item.text.lower():
+                        manga_info["author"] = item.find("div", {"class": "author-content"}).text.strip()
+                    if "genre" in item.text.lower():
+                        manga_info["tags"] = item.find("div", {"class": "genres-content"}).text.strip().split(",")
 
                 manga_info["status"] = post_status.find("div", {"class": "summary-content"}).text.strip()
 
