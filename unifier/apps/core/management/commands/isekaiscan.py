@@ -7,14 +7,13 @@ from bs4.element import ResultSet, Tag
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from requests.models import Response
-from rest_framework import status
 from unifier.apps.core.models import Manga, MangaChapter, Platform
 from unifier.apps.core.models.chapter import Language
 from unifier.apps.core.services import BulkCreateMangaChapterService
 
 
 class Command(BaseCommand):
-    help = ""
+    help = "Isekaiscan crawler command"
 
     def handle(self, *args, **kwargs):
         platform = Platform.objects.get(name="isekaiscan")
@@ -24,18 +23,18 @@ class Command(BaseCommand):
             for manga in mangas:
                 manga_info = {}
                 chapters_content = []
-                slug_title = slugify(manga.title)
+
+                data = {"action": "manga_get_chapters", "manga": None}
                 headers = {
                     "User-Agent": (
                         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                         "(KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"
                     )
                 }
-                data = {"action": "manga_get_chapters", "manga": None}
 
                 self.stdout.write(f"Current manga: {manga}")
 
-                response = requests.get(f"{platform.url}manga/{slug_title}")
+                response = requests.get(f"{platform.url}manga/{slugify(manga.title)}")
                 response.raise_for_status()
                 content = BeautifulSoup(response.text, "html.parser")
                 shortlink = content.find("link", {"rel": "shortlink"}).attrs["href"]
@@ -58,7 +57,13 @@ class Command(BaseCommand):
                 content = BeautifulSoup(response.text, "html.parser")
                 chapters_urls = content.find_all("a", attrs={"href": True, "class": False})
 
-                for url in chapters_urls[:5]:
+                manga_info["chapters_count"] = len(chapters_urls)
+
+                if manga.chapters_count == manga_info["chapters_count"]:
+                    self.stdout.write(f"{manga} don't have any new chapters")
+                    continue
+
+                for url in chapters_urls:
                     data = {}
                     data["title"] = url.text.strip()
                     data["number"] = int(re.findall(r"\d+", url.text.strip())[0])
@@ -74,5 +79,6 @@ class Command(BaseCommand):
                     data["images"] = [image.attrs["data-src"].strip() for image in images_div.find_all("img")]
                     chapters_content.append(data)
 
-                breakpoint()
                 BulkCreateMangaChapterService([MangaChapter(**chapter) for chapter in chapters_content]).execute()
+                manga.__dict__.update(**manga_info)
+                manga.save()

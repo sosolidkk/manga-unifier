@@ -2,10 +2,6 @@ from django.contrib import admin
 from unifier.apps.core.models import Manga, MangaChapter, Novel, NovelChapter, Platform
 
 
-class MangaChapterInline(admin.TabularInline):
-    model = MangaChapter
-
-
 class NovelChapterInline(admin.TabularInline):
     model = NovelChapter
 
@@ -28,7 +24,6 @@ class MangaAdmin(admin.ModelAdmin):
         "title",
         "year",
     )
-    inlines = (MangaChapterInline,)
 
 
 @admin.register(MangaChapter)
