@@ -2,10 +2,6 @@ from django.contrib import admin
 from unifier.apps.core.models import Manga, MangaChapter, Novel, NovelChapter, Platform
 
 
-class MangaChapterInline(admin.TabularInline):
-    model = MangaChapter
-
-
 class NovelChapterInline(admin.TabularInline):
     model = NovelChapter
 
@@ -28,7 +24,6 @@ class MangaAdmin(admin.ModelAdmin):
         "title",
         "year",
     )
-    inlines = (MangaChapterInline,)
 
 
 @admin.register(MangaChapter)
@@ -37,12 +32,23 @@ class MangaChapterAdmin(admin.ModelAdmin):
         "number",
         "title",
         "language",
+        "get_manga_title",
     )
     list_filter = (
+        "manga__title",
         "created_at",
         "updated_at",
     )
-    search_fields = ("title",)
+    search_fields = (
+        "title",
+        "manga__title",
+    )
+
+    def get_manga_title(self, obj):
+        return obj.manga.title
+
+    get_manga_title.admin_order_field = "manga"
+    get_manga_title.short_description = "Manga Title"
 
 
 @admin.register(Novel)
