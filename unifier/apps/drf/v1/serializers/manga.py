@@ -35,6 +35,7 @@ class MangaSerializer(serializers.ModelSerializer):
             "rate",
             "status",
             "cover",
+            "tags",
             "manga_url",
         ]
 

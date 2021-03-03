@@ -23,3 +23,4 @@ class MangaFactory(factory.django.DjangoModelFactory):
     rate = Decimal(4.80)
     status = "OnGoing"
     cover = "https://www.webtoon.xyz/wp-content/uploads/2020/05/The-Beginning-After-the-End-193x278.jpg"
+    tags = ["Action", " Adventure", " Comedy", " Drama", " Fantasy"]
