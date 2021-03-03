@@ -27,6 +27,7 @@ class MangaViewSetTest(APITransactionTestCase):
             "rate",
             "status",
             "cover",
+            "tags",
             "manga_url",
         ) == tuple(response.json()["results"][0].keys())
 
@@ -44,6 +45,7 @@ class MangaViewSetTest(APITransactionTestCase):
             "rate",
             "status",
             "cover",
+            "tags",
             "chapters",
         ) == tuple(response.json().keys())
 
