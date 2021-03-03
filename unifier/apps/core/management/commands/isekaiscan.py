@@ -44,7 +44,8 @@ class Command(BaseCommand):
                     self.stdout.write(f"{manga} don't have any new chapters")
                     continue
 
-                for url in chapters_urls:
+                limit = self._find_chapter_interval(manga, manga_info["chapters_count"])
+                for url in chapters_urls[:limit]:
                     data = self._find_chapter_info(url, manga)
                     self.stdout.write(f"Chapter: {data}")
 
@@ -99,3 +100,8 @@ class Command(BaseCommand):
     def _find_chapter_images(self, content: BeautifulSoup) -> list:
         images_div = content.find("div", {"class": "reading-content"})
         return [image.attrs["data-src"].strip() for image in images_div.find_all("img")]
+
+    def _find_chapter_interval(self, manga: Manga, chapters_count: int) -> int:
+        if manga.chapters_count == 0:
+            return chapters_count
+        return abs(manga.chapters_count - chapters_count)
