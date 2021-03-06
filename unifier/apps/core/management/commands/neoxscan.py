@@ -1,137 +1,121 @@
 import logging
+import re
 
-import requests
 from bs4 import BeautifulSoup
-from bs4.element import ResultSet, Tag
+from bs4.element import Tag
 from django.core.management.base import BaseCommand
-from requests.models import Response
-from rest_framework import status
+from django.utils.text import slugify
 from unifier.apps.core.models import Manga, MangaChapter, Platform
 from unifier.apps.core.models.chapter import Language
 from unifier.apps.core.services import BulkCreateMangaChapterService
+from unifier.support.http import http
 
 
 class Command(BaseCommand):
-    help = ""
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"
-        )
-    }
+    help = "Neoxscan crawler command"
 
     def handle(self, *args, **kwargs):
-        self.platform = Platform.objects.get(name="neoxscan")
-        mangas = self.platform.mangas.all()
+        platform = Platform.objects.get(name="neoxscan")
+        mangas = platform.mangas.all()
 
-        if self.platform:
+        if platform:
             for manga in mangas:
+                manga_info = {}
+                chapters_content = []
+                payload = {"action": "manga_get_chapters", "manga": None}
+
                 self.stdout.write(f"Current manga: {manga}")
 
-                chapters_content = []
+                title = (
+                    manga.title if manga.title.lower() != "the beginning after the end" else "O começo depois do fim"
+                )
 
-                manga_url = self._get_manga_url(manga)
-                manga_id = int(self._get_manga_id(manga_url))
-                chapters = self._get_manga_chapters(manga_id)
-                chapters.reverse()
+                response = http.get(f"{platform.url}manga/{slugify(title)}")
+                content = BeautifulSoup(response.text, "html.parser")
 
-                if self._has_new_chapter(int(chapters[-1].find("a").text.strip().replace("Cap. ", "")), manga):
-                    for chapter in chapters:
-                        if not self._has_new_chapter(int(chapter.find("a").text.strip().replace("Cap. ", "")), manga):
-                            self.stdout.write(f"{manga} don't have any new chapters")
-                            break
+                payload["manga"] = self._find_manga_id(content)
+                manga_info = {**self._find_manga_info(content)}
 
-                        data = self._get_chapter_data(chapter)
-                        self.stdout.write(f"chapter: {data}")
-                        chapters_content.append(data)
+                response = http.post(platform.url_search, data=payload)
+                content = BeautifulSoup(response.text, "html.parser")
 
-                    for chapter in chapters_content:
-                        response = requests.get(chapter["images_url"])
-                        if not self._is_valid_response(response):
-                            self.stdout.write(f"status_code: {response.status_code} | manga: {manga}")
+                chapters_urls = list(
+                    reversed(content.find_all("a", attrs={"href": True, "class": False, "title": False}))
+                )
+                manga_info["chapters_count"] = len(chapters_urls)
 
-                        self._get_chapter_images(chapter, response)
-                        self.stdout.write(f"Images for chapter {chapter['number']}")
-
-                    BulkCreateMangaChapterService(
-                        [MangaChapter(**{**chapter, "manga": manga}) for chapter in chapters_content]
-                    ).execute()
-                else:
+                if not self._has_new_chapter(manga, manga_info["chapters_count"]):
                     self.stdout.write(f"{manga} don't have any new chapters")
+                    continue
 
-    def _has_new_chapter(self, chapter_number: int, manga: Manga) -> bool:
-        last_chapter = manga.manga_chapters.last().number if manga.manga_chapters.last() else None
-        if last_chapter:
-            if chapter_number == last_chapter:
-                return False
+                limit = self._find_chapter_interval(manga, manga_info["chapters_count"])
+                for url in chapters_urls[manga_info["chapters_count"] - limit :]:
+                    data = self._find_chapter_info(url, manga)
+                    self.stdout.write(f"Chapter: {data}")
+
+                    response = http.get(data["url"])
+                    content = BeautifulSoup(response.text, "html.parser")
+
+                    data["images"] = self._find_chapter_images(content)
+
+                    del data["url"]
+
+                    chapters_content.append(data)
+
+                BulkCreateMangaChapterService([MangaChapter(**chapter) for chapter in chapters_content]).execute()
+                manga.__dict__.update(**manga_info)
+                manga.save()
+
+    def _has_new_chapter(self, manga: Manga, chapters_count: int) -> bool:
+        current_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.PORTUGUESE_BR).count()
+        if chapters_count <= current_chapters_count:
+            return False
         return True
 
-    def _is_valid_response(self, response: Response) -> bool:
-        if response.status_code == status.HTTP_200_OK:
-            return True
-        return False
+    def _find_manga_info(self, content: BeautifulSoup) -> dict:
+        _manga_info = {}
 
-    def _get_manga_url(self, manga: Manga) -> str:
-        print("--> Getting manga url")
+        post_content = content.find("div", {"class": "post-content"})
+        post_status = content.find("div", {"class": "post-status"})
+        post_status_items = post_status.find_all("div", {"class": "post-content_item"})
+        summary_image = content.find("div", {"class": "summary_image"})
+        post_content_items = post_content.find_all("div", {"class": "post-content_item"})
 
-        title = ""
-        if manga.title == "The Beginning After The End":
-            title = "O começo depois do fim"
-        else:
-            title = manga.title
+        for item in post_content_items:
+            if "autor" in item.text.lower():
+                _manga_info["author"] = item.find("div", {"class": "author-content"}).text.strip()
+            if "gênero" in item.text.lower():
+                _manga_info["tags"] = item.find("div", {"class": "genres-content"}).text.strip().split(",")
 
-        payload = {"action": "wp-manga-search-manga", "title": title}
-        response = requests.post(self.platform.url_search, data=payload, headers=self.headers)
+        for item in post_status_items:
+            if "status" in item.text.lower():
+                _manga_info["status"] = item.find("div", {"class": "summary-content"}).text.strip()
 
-        _data = response.json().get("data", None)
-        if _data is not None:
-            manga_url = _data[0].get("url", None)
-            return manga_url
+        _manga_info["cover"] = summary_image.find("img").attrs["data-src"]
 
-    def _get_manga_id(self, manga_url: str) -> str:
-        print("--> Getting manga id")
+        return _manga_info
 
-        delimiter = "?p="
+    def _find_manga_id(self, content: BeautifulSoup) -> int:
+        shortlink = content.find("link", {"rel": "shortlink"}).attrs["href"]
+        return int(shortlink.split("=")[-1])
 
-        response = requests.get(manga_url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        shortlink = soup.find("link", {"rel": "shortlink"}).attrs.get("href")
-        index = shortlink.find(delimiter)
-        id = shortlink[index:].replace(delimiter, "")
-
-        return id
-
-    def _get_manga_chapters(self, manga_id: int) -> ResultSet:
-        print("--> Getting manga chapters")
-
-        payload = {"action": "manga_get_chapters", "manga": manga_id}
-        response = requests.post(self.platform.url_search, data=payload, headers=self.headers)
-        chapters = self._parse_manga_chapters(response)
-
-        return chapters
-
-    def _parse_manga_chapters(self, response: Response) -> ResultSet:
-        soup = BeautifulSoup(response.text, "html.parser")
-        chapters = soup.find_all("li")
-
-        return chapters
-
-    def _get_chapter_data(self, chapter: Tag) -> dict:
+    def _find_chapter_info(self, element: Tag, manga: Manga) -> dict:
         data = {}
-
-        data["number"] = int(chapter.find("a").text.strip().replace("Cap. ", ""))
-        data["title"] = chapter.find("a").text.strip()
+        data["title"] = element.text.strip()
+        data["number"] = int(re.findall(r"\d+", element.text.strip())[0])
         data["language"] = Language.PORTUGUESE_BR
-        data["images_url"] = chapter.find("a").attrs.get("href")
+        data["manga"] = manga
+        data["url"] = element.attrs["href"]
         data["images"] = []
 
         return data
 
-    def _get_chapter_images(self, chapter: dict, response: Response) -> None:
-        content = BeautifulSoup(response.text, "html.parser")
-        images = content.find_all("div", {"class": "page-break no-gaps"})
+    def _find_chapter_images(self, content: BeautifulSoup) -> list:
+        images_div = content.find("div", {"class": "reading-content"})
+        return [image.attrs["data-src"].strip() for image in images_div.find_all("img")]
 
-        for image in images:
-            src = image.find("img").attrs.get("data-src").strip()
-            chapter["images"].append(src)
-        del chapter["images_url"]
+    def _find_chapter_interval(self, manga: Manga, chapters_count: int) -> int:
+        current_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.PORTUGUESE_BR).count()
+        if current_chapters_count == 0:
+            return chapters_count
+        return abs(current_chapters_count - chapters_count)
