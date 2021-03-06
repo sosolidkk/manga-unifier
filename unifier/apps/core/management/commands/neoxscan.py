@@ -44,11 +44,15 @@ class Command(BaseCommand):
                 )
                 manga_info["chapters_count"] = len(chapters_urls)
 
-                if not self._has_new_chapter(manga, manga_info["chapters_count"]):
+                portuguese_chapters_count = MangaChapter.objects.filter(
+                    manga=manga, language=Language.PORTUGUESE_BR
+                ).count()
+
+                if not self._has_new_chapter(portuguese_chapters_count, manga_info["chapters_count"]):
                     self.stdout.write(f"{manga} don't have any new chapters")
                     continue
 
-                limit = self._find_chapter_interval(manga, manga_info["chapters_count"])
+                limit = self._find_chapter_interval(portuguese_chapters_count, manga_info["chapters_count"])
                 for url in chapters_urls[manga_info["chapters_count"] - limit :]:
                     data = self._find_chapter_info(url, manga)
                     self.stdout.write(f"Chapter: {data}")
@@ -66,9 +70,8 @@ class Command(BaseCommand):
                 manga.__dict__.update(**manga_info)
                 manga.save()
 
-    def _has_new_chapter(self, manga: Manga, chapters_count: int) -> bool:
-        current_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.PORTUGUESE_BR).count()
-        if chapters_count <= current_chapters_count:
+    def _has_new_chapter(self, portuguese_chapters_count: int, chapters_count: int) -> bool:
+        if chapters_count <= portuguese_chapters_count:
             return False
         return True
 
@@ -114,8 +117,7 @@ class Command(BaseCommand):
         images_div = content.find("div", {"class": "reading-content"})
         return [image.attrs["data-src"].strip() for image in images_div.find_all("img")]
 
-    def _find_chapter_interval(self, manga: Manga, chapters_count: int) -> int:
-        current_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.PORTUGUESE_BR).count()
-        if current_chapters_count == 0:
+    def _find_chapter_interval(self, portuguese_chapters_count: int, chapters_count: int) -> int:
+        if portuguese_chapters_count == 0:
             return chapters_count
-        return abs(current_chapters_count - chapters_count)
+        return abs(portuguese_chapters_count - chapters_count)
