@@ -18,11 +18,12 @@ This project is built with:
 As we are using Docker for this project, you do not need to configure it locally, just make sure Docker is installed on your machine. Follow these steps:
 
 ```shell
+# To build the application
 docker-compose build
 # To run the application
-docker-compose up -d app
+docker-compose up -d app # docker-compose up --build -d app
 # For testing
-docker-compose run --rm <command>
+docker-compose run --rm integration-tests
 # Check linters
 docker-compose run --rm <command>
 ```
