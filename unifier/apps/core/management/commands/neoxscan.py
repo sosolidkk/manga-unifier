@@ -10,14 +10,12 @@ from unifier.apps.core.models.chapter import Language
 from unifier.apps.core.services import BulkCreateMangaChapterService
 from unifier.support.http import http
 
-logger = logging.getLogger(__name__)
-
 
 class Command(BaseCommand):
-    help = "Isekaiscan crawler command"
+    help = "Neoxscan crawler command"
 
     def handle(self, *args, **kwargs):
-        platform = Platform.objects.get(name="isekaiscan")
+        platform = Platform.objects.get(name="neoxscan")
         mangas = platform.mangas.all()
 
         if platform:
@@ -28,7 +26,11 @@ class Command(BaseCommand):
 
                 self.stdout.write(f"Current manga: {manga}")
 
-                response = http.get(f"{platform.url}manga/{slugify(manga.title)}")
+                title = (
+                    manga.title if manga.title.lower() != "the beginning after the end" else "O começo depois do fim"
+                )
+
+                response = http.get(f"{platform.url}manga/{slugify(title)}")
                 content = BeautifulSoup(response.text, "html.parser")
 
                 payload["manga"] = self._find_manga_id(content)
@@ -37,15 +39,23 @@ class Command(BaseCommand):
                 response = http.post(platform.url_search, data=payload)
                 content = BeautifulSoup(response.text, "html.parser")
 
-                chapters_urls = content.find_all("a", attrs={"href": True, "class": False})
+                chapters_urls = list(
+                    reversed(content.find_all("a", attrs={"href": True, "class": False, "title": False}))
+                )
                 manga_info["chapters_count"] = len(chapters_urls)
 
-                if not self._has_new_chapters(manga, manga_info["chapters_count"]):
+                portuguese_chapters_count = MangaChapter.objects.filter(
+                    manga=manga, language=Language.PORTUGUESE_BR
+                ).count()
+
+                if not self._has_new_chapter(portuguese_chapters_count, manga_info["chapters_count"]):
                     self.stdout.write(f"{manga} don't have any new chapters")
                     continue
 
-                limit = self._find_chapter_interval(manga, manga_info["chapters_count"])
-                for url in chapters_urls[:limit]:
+                limit = self._find_chapter_interval(portuguese_chapters_count, manga_info["chapters_count"])
+                limit = abs(manga_info["chapters_count"] - limit)
+
+                for url in chapters_urls[limit:]:
                     data = self._find_chapter_info(url, manga)
                     self.stdout.write(f"Chapter: {data}")
 
@@ -53,6 +63,7 @@ class Command(BaseCommand):
                     content = BeautifulSoup(response.text, "html.parser")
 
                     data["images"] = self._find_chapter_images(content)
+
                     del data["url"]
 
                     chapters_content.append(data)
@@ -61,9 +72,8 @@ class Command(BaseCommand):
                 manga.__dict__.update(**manga_info)
                 manga.save()
 
-    def _has_new_chapters(self, manga: Manga, chapters_count: int):
-        english_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.ENGLISH_US).count()
-        if english_chapters_count == chapters_count:
+    def _has_new_chapter(self, portuguese_chapters_count: int, chapters_count: int) -> bool:
+        if chapters_count <= portuguese_chapters_count:
             return False
         return True
 
@@ -72,14 +82,21 @@ class Command(BaseCommand):
 
         post_content = content.find("div", {"class": "post-content"})
         post_status = content.find("div", {"class": "post-status"})
+        post_status_items = post_status.find_all("div", {"class": "post-content_item"})
+        summary_image = content.find("div", {"class": "summary_image"})
         post_content_items = post_content.find_all("div", {"class": "post-content_item"})
 
         for item in post_content_items:
-            if "author" in item.text.lower():
+            if "autor" in item.text.lower():
                 _manga_info["author"] = item.find("div", {"class": "author-content"}).text.strip()
-            if "genre" in item.text.lower():
+            if "gênero" in item.text.lower():
                 _manga_info["tags"] = item.find("div", {"class": "genres-content"}).text.strip().split(",")
-        _manga_info["status"] = post_status.find("div", {"class": "summary-content"}).text.strip()
+
+        for item in post_status_items:
+            if "status" in item.text.lower():
+                _manga_info["status"] = item.find("div", {"class": "summary-content"}).text.strip()
+
+        _manga_info["cover"] = summary_image.find("img").attrs["data-src"]
 
         return _manga_info
 
@@ -89,9 +106,9 @@ class Command(BaseCommand):
 
     def _find_chapter_info(self, element: Tag, manga: Manga) -> dict:
         data = {}
-        data["title"] = element.text.strip().capitalize()
+        data["title"] = element.text.strip()
         data["number"] = int(re.findall(r"\d+", element.text.strip())[0])
-        data["language"] = Language.ENGLISH_US
+        data["language"] = Language.PORTUGUESE_BR
         data["manga"] = manga
         data["url"] = element.attrs["href"]
         data["images"] = []
@@ -102,8 +119,7 @@ class Command(BaseCommand):
         images_div = content.find("div", {"class": "reading-content"})
         return [image.attrs["data-src"].strip() for image in images_div.find_all("img")]
 
-    def _find_chapter_interval(self, manga: Manga, chapters_count: int) -> int:
-        english_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.ENGLISH_US).count()
-        if english_chapters_count == 0:
+    def _find_chapter_interval(self, portuguese_chapters_count: int, chapters_count: int) -> int:
+        if portuguese_chapters_count == 0:
             return chapters_count
-        return abs(english_chapters_count - chapters_count)
+        return abs(portuguese_chapters_count - chapters_count)
