@@ -62,7 +62,8 @@ class Command(BaseCommand):
                 manga.save()
 
     def _has_new_chapters(self, manga: Manga, chapters_count: int):
-        if manga.chapters_count == chapters_count:
+        english_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.ENGLISH_US).count()
+        if english_chapters_count == chapters_count:
             return False
         return True
 
@@ -88,7 +89,7 @@ class Command(BaseCommand):
 
     def _find_chapter_info(self, element: Tag, manga: Manga) -> dict:
         data = {}
-        data["title"] = element.text.strip()
+        data["title"] = element.text.strip().capitalize()
         data["number"] = int(re.findall(r"\d+", element.text.strip())[0])
         data["language"] = Language.ENGLISH_US
         data["manga"] = manga
@@ -102,6 +103,7 @@ class Command(BaseCommand):
         return [image.attrs["data-src"].strip() for image in images_div.find_all("img")]
 
     def _find_chapter_interval(self, manga: Manga, chapters_count: int) -> int:
-        if manga.chapters_count == 0:
+        english_chapters_count = MangaChapter.objects.filter(manga=manga, language=Language.ENGLISH_US).count()
+        if english_chapters_count == 0:
             return chapters_count
-        return abs(manga.chapters_count - chapters_count)
+        return abs(english_chapters_count - chapters_count)

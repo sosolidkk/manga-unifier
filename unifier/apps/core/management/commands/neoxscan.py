@@ -53,7 +53,9 @@ class Command(BaseCommand):
                     continue
 
                 limit = self._find_chapter_interval(portuguese_chapters_count, manga_info["chapters_count"])
-                for url in chapters_urls[manga_info["chapters_count"] - limit :]:
+                limit = abs(manga_info["chapters_count"] - limit)
+
+                for url in chapters_urls[limit:]:
                     data = self._find_chapter_info(url, manga)
                     self.stdout.write(f"Chapter: {data}")
 
