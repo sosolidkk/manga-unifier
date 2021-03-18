@@ -23,7 +23,7 @@ router.register("novel-chapter", NovelChapterRetrieveViewSet, basename="novel-ch
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
-    path("api-token-auth/", views.obtain_auth_token),
-    path("create-user", UserCreateAPIView.as_view(), name="create-user"),
+    path("auth-token/", views.obtain_auth_token, name="auth-token"),
+    path("create-user/", UserCreateAPIView.as_view(), name="create-user"),
     path("api/v1/", include(router.urls)),
 ]
