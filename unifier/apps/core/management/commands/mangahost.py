@@ -1,6 +1,6 @@
 import logging
-from time import sleep
 import re
+from time import sleep
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -107,18 +107,15 @@ class Command(BaseCommand):
     def _find_chapter_info(self, element: Tag, manga: Manga) -> dict:
         data = {}
 
-        try:
-            url = element.find("a", {"class": "btn-green w-button pull-left"}).attrs["href"]
-            number = url.split("/")[-1]
+        url = element.find("a", {"class": "btn-green w-button pull-left"}).attrs["href"]
+        number = url.split("/")[-1]
 
-            data["title"] = element.find("div", {"class": "pop-title"}).text
-            data["number"] = int(re.findall(r"\d+", number)[0])
-            data["language"] = Language.PORTUGUESE_BR
-            data["manga"] = manga
-            data["url"] = url
-            data["images"] = []
-        except:
-            pass
+        data["title"] = element.find("div", {"class": "pop-title"}).text
+        data["number"] = int(re.findall(r"\d+", number)[0])
+        data["language"] = Language.PORTUGUESE_BR
+        data["manga"] = manga
+        data["url"] = url
+        data["images"] = []
 
         return data
 
