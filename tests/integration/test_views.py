@@ -1,5 +1,4 @@
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient, APITransactionTestCase
 from tests.factories.chapter import MangaChapterFactory, NovelChapterFactory
@@ -14,8 +13,8 @@ class MangaViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.manga = MangaFactory()
         self.user = UserFactory.create()
-        self.token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
 
     def test_assert_manga_fields(self):
         response = self.client.get(reverse("manga-list"))
@@ -61,8 +60,8 @@ class MangaChapterRetrieveViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.manga_chapter = MangaChapterFactory()
         self.user = UserFactory.create()
-        self.token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
 
     def test_assert_manga_chapter_fields(self):
         response = self.client.get(reverse("manga-chapter-detail", args=[self.manga_chapter.id]))
@@ -77,8 +76,8 @@ class NovelViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.novel = NovelFactory()
         self.user = UserFactory.create()
-        self.token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
 
     def test_assert_novel_fields(self):
         response = self.client.get(reverse("novel-list"))
@@ -124,8 +123,8 @@ class NovelChapterRetrieveViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.novel_chapter = NovelChapterFactory()
         self.user = UserFactory.create()
-        self.token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
 
     def test_assert_novel_chapter_fields(self):
         response = self.client.get(reverse("novel-chapter-detail", args=[self.novel_chapter.id]))
