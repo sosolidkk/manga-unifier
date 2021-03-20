@@ -19,7 +19,9 @@ class UserCreateAPIViewTest(APITransactionTestCase):
 
         assert response.status_code == status.HTTP_201_CREATED
         assert 1 == User.objects.count()
-        assert set(response.json().items()).issubset(set(self.payload.items()))
+        assert response.json()["username"] == User.objects.first().username
+        assert response.json()["email"] == User.objects.first().email
+        assert response.json()["token"] == User.objects.first().auth_token.key
 
     def test_create_user_with_missing_param(self):
         del self.payload["password"]
