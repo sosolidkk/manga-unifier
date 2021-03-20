@@ -10,7 +10,7 @@ repository = "https://github.com/sosolidkk/manga-unifier"
 [tool.poetry.dependencies]
 python = "^3.8"
 django = "^3.1.6"
-djangorestframework = "^3.11.1"
+djangorestframework = "^3.11.2"
 django-filter = "^2.4.0"
 dj_database_url = "^0.5.0"
 whitenoise = "^5.2.0"

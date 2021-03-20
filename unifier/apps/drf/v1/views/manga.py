@@ -1,4 +1,5 @@
 from rest_framework import mixins, viewsets
+from rest_framework.permissions import IsAuthenticated
 from unifier.apps.core.models import Manga, MangaChapter
 from unifier.apps.drf.v1.pagination import BasePagination
 from unifier.apps.drf.v1.serializers import MangaChapterDetailSerializer, MangaSerializer, MangaSerializerDetail
@@ -8,6 +9,7 @@ class MangaViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Manga.objects.all()
     serializer_class = MangaSerializer
     pagination_class = BasePagination
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -19,3 +21,4 @@ class MangaChapterRetrieveViewSet(mixins.RetrieveModelMixin, viewsets.GenericVie
     queryset = MangaChapter.objects.all()
     serializer_class = MangaChapterDetailSerializer
     pagination_class = BasePagination
+    permission_classes = (IsAuthenticated,)
