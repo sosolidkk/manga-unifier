@@ -21,6 +21,8 @@ class Command(BaseCommand):
 
         if platform:
             for manga in mangas:
+                sleep(1)
+
                 manga_info = {}
                 chapters_content = []
 
@@ -78,6 +80,7 @@ class Command(BaseCommand):
         box_info = content.find("div", {"class": "box-content alert alert-left w-row"})
         summary_image = content.find("div", {"class": "widget"})
         tags_field = content.find_all("a", {"class": "tag"})
+        description_field = content.find("div", {"class": "paragraph"})
 
         info_items_uls = box_info.find_all("ul", {"class": "w-list-unstyled"})
         for info_item_ul in info_items_uls:
@@ -95,8 +98,8 @@ class Command(BaseCommand):
                 elif title == "status":
                     _manga_info["status"] = text
 
-        _manga_info["cover"] = summary_image.find("img").attrs["src"]
         _manga_info["tags"] = [tag.text.capitalize() for tag in tags_field]
+        _manga_info["description"] = description_field.find("p").text
 
         return _manga_info
 
