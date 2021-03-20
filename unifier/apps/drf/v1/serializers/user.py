@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from unifier.apps.core.models import User
-from rest_framework.authtoken.models import Token
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -18,8 +17,4 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def get_token(self, obj):
-        try:
-            token = obj.auth_token.key
-        except Token.DoesNotExist:
-            token = Token.objects.create(user=obj)
-            return token.key
+        return obj.auth_token.key
