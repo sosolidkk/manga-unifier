@@ -9,6 +9,7 @@ from unifier.apps.drf.v1.views import (
     NovelChapterRetrieveViewSet,
     NovelViewSet,
     UserCreateAPIView,
+    UserDeleteAPIView,
 )
 
 admin.site.site_title = "Manga Unifier"
@@ -25,5 +26,6 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("api/v1/auth-token/", views.obtain_auth_token, name="auth-token"),
     path("api/v1/create-user/", UserCreateAPIView.as_view(), name="create-user"),
+    path("api/v1/delete-user/", UserDeleteAPIView.as_view(), name="delete-user"),
     path("api/v1/", include(router.urls)),
 ]
