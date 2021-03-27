@@ -107,14 +107,16 @@ class MangaChapterCreateViewSetTest(APITransactionTestCase):
         ]
 
     def test_create_manga_chapter_passing_dict(self):
-        response = self.client.post(reverse("create-mangachapter-list"), data=self.dict_payload)
+        response = self.client.post(
+            reverse("create-mangachapter-list"), json.dumps(self.dict_payload), content_type="application/json",
+        )
 
         assert status.HTTP_201_CREATED == response.status_code
         assert 1 == MangaChapter.objects.count()
 
     def test_create_manga_chapter_passing_list(self):
         response = self.client.post(
-            reverse("create-mangachapter-list"), json.dumps(self.list_payload), content_type="application/json"
+            reverse("create-mangachapter-list"), json.dumps(self.list_payload), content_type="application/json",
         )
 
         assert status.HTTP_201_CREATED == response.status_code
