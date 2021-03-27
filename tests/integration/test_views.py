@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient, APITransactionTestCase
@@ -5,6 +7,7 @@ from tests.factories.chapter import MangaChapterFactory, NovelChapterFactory
 from tests.factories.manga import MangaFactory
 from tests.factories.novel import NovelFactory
 from tests.factories.user import UserFactory
+from unifier.apps.core.models import MangaChapter
 
 
 class MangaViewSetTest(APITransactionTestCase):
@@ -68,6 +71,56 @@ class MangaChapterRetrieveViewSetTest(APITransactionTestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert ("id", "number", "title", "language", "images",) == tuple(response.json().keys())
+
+
+class MangaChapterCreateViewSetTest(APITransactionTestCase):
+    client = APIClient()
+
+    def setUp(self):
+        self.manga = MangaFactory()
+        self.user = UserFactory()
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
+
+        self.dict_payload = {
+            "number": 1,
+            "title": "My dict chapter",
+            "language": 0,
+            "images": ["image 1"],
+            "manga": self.manga.title,
+        }
+        self.list_payload = [
+            {
+                "number": 1,
+                "title": "My list chapter",
+                "language": 0,
+                "images": ["image 1", "image 2"],
+                "manga": self.manga.title,
+            },
+            {
+                "number": 2,
+                "title": "My list chapter 2",
+                "language": 1,
+                "images": ["image 1", "image 2", "image 3"],
+                "manga": self.manga.title,
+            },
+        ]
+
+    def test_create_manga_chapter_passing_dict(self):
+        response = self.client.post(
+            reverse("create-mangachapter-list"), json.dumps(self.dict_payload), content_type="application/json",
+        )
+
+        assert status.HTTP_201_CREATED == response.status_code
+        assert 1 == MangaChapter.objects.count()
+
+    def test_create_manga_chapter_passing_list(self):
+        response = self.client.post(
+            reverse("create-mangachapter-list"), json.dumps(self.list_payload), content_type="application/json",
+        )
+
+        assert status.HTTP_201_CREATED == response.status_code
+        assert 2 == MangaChapter.objects.count()
 
 
 class NovelViewSetTest(APITransactionTestCase):

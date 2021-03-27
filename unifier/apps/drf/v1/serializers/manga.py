@@ -20,6 +20,25 @@ class MangaChapterDetailSerializer(serializers.ModelSerializer):
         fields = MangaChapterSerializer.Meta.fields[:-1] + ["images"]
 
 
+class MangaChapterCreateSerializer(serializers.ModelSerializer):
+    manga = serializers.CharField()
+
+    class Meta:
+        model = MangaChapter
+        fields = [
+            "number",
+            "title",
+            "language",
+            "images",
+            "manga",
+        ]
+
+    def create(self, validated_data):
+        manga = Manga.objects.get(title=validated_data.pop("manga"))
+        instance = MangaChapter.objects.create(**validated_data, manga=manga)
+        return instance
+
+
 class MangaSerializer(serializers.ModelSerializer):
     manga_url = serializers.SerializerMethodField()
 

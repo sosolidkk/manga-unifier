@@ -4,6 +4,7 @@ from rest_framework.authtoken import views
 from rest_framework.routers import DefaultRouter
 
 from unifier.apps.drf.v1.views import (
+    MangaChapterCreateViewSet,
     MangaChapterRetrieveViewSet,
     MangaViewSet,
     NovelChapterRetrieveViewSet,
@@ -20,6 +21,7 @@ router.register("mangas", MangaViewSet)
 router.register("novels", NovelViewSet)
 router.register("manga-chapter", MangaChapterRetrieveViewSet, basename="manga-chapter")
 router.register("novel-chapter", NovelChapterRetrieveViewSet, basename="novel-chapter")
+router.register("create-mangachapter", MangaChapterCreateViewSet, basename="create-mangachapter")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
