@@ -1,4 +1,5 @@
 from unifier.apps.drf.v1.serializers.manga import (
+    MangaChapterCreateSerializer,
     MangaChapterDetailSerializer,
     MangaChapterSerializer,
     MangaSerializer,
