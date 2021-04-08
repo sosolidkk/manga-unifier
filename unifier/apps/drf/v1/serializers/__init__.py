@@ -11,4 +11,8 @@ from unifier.apps.drf.v1.serializers.novel import (
     NovelSerializer,
     NovelSerializerDetail,
 )
+from unifier.apps.drf.v1.serializers.platform import (
+    PlatformSerializer,
+    PlatformSerializerDetail,
+)
 from unifier.apps.drf.v1.serializers.user import UserSerializer
