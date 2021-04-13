@@ -62,6 +62,22 @@ class MangaSerializer(serializers.ModelSerializer):
         return reverse("manga-detail", args=[obj.id])
 
 
+class MangaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Manga
+        fields = [
+            "title",
+            "year",
+            "chapters_count",
+            "author",
+            "description",
+            "rate",
+            "status",
+            "cover",
+            "tags",
+        ]
+
+
 class MangaSerializerDetail(serializers.ModelSerializer):
     chapters = MangaChapterSerializer(source="manga_chapters", many=True, read_only=True)
 
