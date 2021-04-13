@@ -2,6 +2,7 @@ from unifier.apps.drf.v1.serializers.manga import (
     MangaChapterCreateSerializer,
     MangaChapterDetailSerializer,
     MangaChapterSerializer,
+    MangaCreateSerializer,
     MangaSerializer,
     MangaSerializerDetail,
 )
@@ -11,4 +12,5 @@ from unifier.apps.drf.v1.serializers.novel import (
     NovelSerializer,
     NovelSerializerDetail,
 )
+from unifier.apps.drf.v1.serializers.platform import PlatformSerializer, PlatformSerializerDetail
 from unifier.apps.drf.v1.serializers.user import UserSerializer

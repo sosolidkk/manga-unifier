@@ -9,6 +9,7 @@ from unifier.apps.drf.v1.views import (
     MangaViewSet,
     NovelChapterRetrieveViewSet,
     NovelViewSet,
+    PlatformViewSet,
     UserCreateAPIView,
     UserDeleteAPIView,
 )
@@ -17,6 +18,7 @@ admin.site.site_title = "Manga Unifier"
 admin.site.site_header = f"{admin.site.site_title} administration"
 
 router = DefaultRouter()
+router.register("platform", PlatformViewSet)
 router.register("mangas", MangaViewSet)
 router.register("novels", NovelViewSet)
 router.register("manga-chapter", MangaChapterRetrieveViewSet, basename="manga-chapter")
