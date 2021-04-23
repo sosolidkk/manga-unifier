@@ -16,8 +16,8 @@ class NovelPlatformSerializer(serializers.ModelSerializer):
 
 
 class PlatformSerializer(serializers.ModelSerializer):
-    manga = MangaPlatformSerializer(read_only=True, many=True)
-    novel = NovelPlatformSerializer(read_only=True, many=True)
+    mangas = MangaPlatformSerializer(read_only=True, many=True)
+    novels = NovelPlatformSerializer(read_only=True, many=True)
     platform_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -26,8 +26,8 @@ class PlatformSerializer(serializers.ModelSerializer):
             "url",
             "name",
             "url_search",
-            "manga",
-            "novel",
+            "mangas",
+            "novels",
             "platform_url",
         ]
 
@@ -36,8 +36,8 @@ class PlatformSerializer(serializers.ModelSerializer):
 
 
 class PlatformSerializerDetail(serializers.ModelSerializer):
-    manga = MangaPlatformSerializer(read_only=True, many=True)
-    novel = NovelPlatformSerializer(read_only=True, many=True)
+    mangas = MangaPlatformSerializer(read_only=True, many=True)
+    novels = NovelPlatformSerializer(read_only=True, many=True)
 
     class Meta:
         model = Platform
