@@ -6,13 +6,13 @@ from unifier.apps.core.models import Manga, Novel, Platform
 class MangaPlatformSerializer(serializers.ModelSerializer):
     class Meta:
         model = Manga
-        fields = ["title", "year", "chapters_count"]
+        fields = ["id", "title", "year", "chapters_count"]
 
 
 class NovelPlatformSerializer(serializers.ModelSerializer):
     class Meta:
         model = Novel
-        fields = ["title", "year", "chapters_count"]
+        fields = ["id", "title", "year", "chapters_count"]
 
 
 class PlatformSerializer(serializers.ModelSerializer):
