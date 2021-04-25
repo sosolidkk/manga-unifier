@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.contrib.admin.models import DELETION, LogEntry
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from unifier.apps.core.models import Manga, MangaChapter, Novel, NovelChapter, Platform
+from unifier.apps.core.models import Favorite, Manga, MangaChapter, Novel, NovelChapter, Platform, get_user_model
 
 
 @admin.register(LogEntry)
@@ -144,3 +145,17 @@ class PlatformAdmin(admin.ModelAdmin):
         "name",
     )
     search_fields = ("name",)
+
+
+class FavoriteInline(admin.StackedInline):
+    model = Favorite
+    can_delete = False
+    verbose_name_plural = "favorites"
+
+
+class UserAdmin(BaseUserAdmin):
+    inlines = (FavoriteInline,)
+
+
+admin.site.unregister(get_user_model())
+admin.site.register(get_user_model(), UserAdmin)
