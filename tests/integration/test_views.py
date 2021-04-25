@@ -1,4 +1,5 @@
 import json
+from uuid import UUID
 
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -6,6 +7,7 @@ from rest_framework.test import APIClient, APITransactionTestCase
 from tests.factories.chapter import MangaChapterFactory, NovelChapterFactory
 from tests.factories.manga import MangaFactory
 from tests.factories.novel import NovelFactory
+from tests.factories.platform import PlatformFactory
 from tests.factories.user import UserFactory
 from unifier.apps.core.models import MangaChapter
 
@@ -14,7 +16,7 @@ class MangaViewSetTest(APITransactionTestCase):
     client = APIClient()
 
     def setUp(self):
-        self.manga = MangaFactory()
+        self.manga = MangaFactory.create()
         self.user = UserFactory.create()
         self.token = self.user.auth_token.key
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
@@ -61,7 +63,7 @@ class MangaChapterRetrieveViewSetTest(APITransactionTestCase):
     client = APIClient()
 
     def setUp(self):
-        self.manga_chapter = MangaChapterFactory()
+        self.manga_chapter = MangaChapterFactory.create()
         self.user = UserFactory.create()
         self.token = self.user.auth_token.key
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
@@ -77,8 +79,8 @@ class MangaChapterCreateViewSetTest(APITransactionTestCase):
     client = APIClient()
 
     def setUp(self):
-        self.manga = MangaFactory()
-        self.user = UserFactory()
+        self.manga = MangaFactory.create()
+        self.user = UserFactory.create()
         self.token = self.user.auth_token.key
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
 
@@ -127,7 +129,7 @@ class NovelViewSetTest(APITransactionTestCase):
     client = APIClient()
 
     def setUp(self):
-        self.novel = NovelFactory()
+        self.novel = NovelFactory.create()
         self.user = UserFactory.create()
         self.token = self.user.auth_token.key
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
@@ -174,7 +176,7 @@ class NovelChapterRetrieveViewSetTest(APITransactionTestCase):
     client = APIClient()
 
     def setUp(self):
-        self.novel_chapter = NovelChapterFactory()
+        self.novel_chapter = NovelChapterFactory.create()
         self.user = UserFactory.create()
         self.token = self.user.auth_token.key
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
@@ -184,3 +186,88 @@ class NovelChapterRetrieveViewSetTest(APITransactionTestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert ("id", "number", "title", "language", "body",) == tuple(response.json().keys())
+
+
+class PlatformViewSetTest(APITransactionTestCase):
+    client = APIClient()
+
+    def setUp(self):
+        self.manga = MangaFactory.create()
+        self.novel = NovelFactory.create()
+        self.platform = PlatformFactory(mangas=[self.manga], novels=[self.novel])
+        self.user = UserFactory.create()
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
+
+    def test_assert_platform_fields(self):
+        response = self.client.get(reverse("platform-list"))
+
+        platform_data = response.json()["results"]
+        platform_manga_data = platform_data[0]["mangas"]
+        platform_novel_data = platform_data[0]["novels"]
+
+        assert isinstance(platform_data, list)
+        assert isinstance(platform_manga_data, list)
+        assert isinstance(platform_novel_data, list)
+
+        assert ("url", "name", "url_search", "mangas", "novels", "platform_url") == tuple(platform_data[0].keys())
+        assert ("id", "title", "year", "chapters_count") == tuple(platform_manga_data[0].keys())
+        assert ("id", "title", "year", "chapters_count") == tuple(platform_novel_data[0].keys())
+
+    def test_assert_platform_field_values(self):
+        response = self.client.get(reverse("platform-list"))
+
+        platform_data = response.json()["results"]
+        platform_manga_data = platform_data[0]["mangas"]
+        platform_novel_data = platform_data[0]["novels"]
+
+        assert self.platform.url == platform_data[0]["url"]
+        assert self.platform.name == platform_data[0]["name"]
+        assert self.platform.url_search == platform_data[0]["url_search"]
+        assert reverse("platform-detail", args=[self.platform.id]) == platform_data[0]["platform_url"]
+
+        assert self.platform.mangas.first().id == UUID(platform_manga_data[0]["id"])
+        assert self.platform.mangas.first().title == platform_manga_data[0]["title"]
+        assert self.platform.mangas.first().year == platform_manga_data[0]["year"]
+        assert self.platform.mangas.first().chapters_count == platform_manga_data[0]["chapters_count"]
+
+        assert self.platform.novels.first().id == UUID(platform_novel_data[0]["id"])
+        assert self.platform.novels.first().title == platform_novel_data[0]["title"]
+        assert self.platform.novels.first().year == platform_novel_data[0]["year"]
+        assert self.platform.novels.first().chapters_count == platform_novel_data[0]["chapters_count"]
+
+    def test_assert_platform_retrieve_fields(self):
+        response = self.client.get(reverse("platform-detail", args=[self.platform.id]))
+
+        platform_data = response.json()
+        platform_manga_data = platform_data["mangas"]
+        platform_novel_data = platform_data["novels"]
+
+        assert isinstance(platform_data, dict)
+        assert isinstance(platform_manga_data, list)
+        assert isinstance(platform_novel_data, list)
+
+        assert ("url", "name", "url_search", "mangas", "novels") == tuple(platform_data.keys())
+        assert ("id", "title", "year", "chapters_count") == tuple(platform_manga_data[0].keys())
+        assert ("id", "title", "year", "chapters_count") == tuple(platform_novel_data[0].keys())
+
+    def test_assert_platform_retrieve_field_values(self):
+        response = self.client.get(reverse("platform-detail", args=[self.platform.id]))
+
+        platform_data = response.json()
+        platform_manga_data = platform_data["mangas"]
+        platform_novel_data = platform_data["novels"]
+
+        assert self.platform.url == platform_data["url"]
+        assert self.platform.name == platform_data["name"]
+        assert self.platform.url_search == platform_data["url_search"]
+
+        assert self.platform.mangas.first().id == UUID(platform_manga_data[0]["id"])
+        assert self.platform.mangas.first().title == platform_manga_data[0]["title"]
+        assert self.platform.mangas.first().year == platform_manga_data[0]["year"]
+        assert self.platform.mangas.first().chapters_count == platform_manga_data[0]["chapters_count"]
+
+        assert self.platform.novels.first().id == UUID(platform_novel_data[0]["id"])
+        assert self.platform.novels.first().title == platform_novel_data[0]["title"]
+        assert self.platform.novels.first().year == platform_novel_data[0]["year"]
+        assert self.platform.novels.first().chapters_count == platform_novel_data[0]["chapters_count"]

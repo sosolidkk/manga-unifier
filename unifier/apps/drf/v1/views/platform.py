@@ -6,7 +6,7 @@ from unifier.apps.drf.v1.serializers import PlatformSerializer, PlatformSerializ
 
 
 class PlatformViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Platform.objects.all()
+    queryset = Platform.objects.all().order_by("name")
     serializer_class = PlatformSerializer
     pagination_class = BasePagination
     permission_classes = (IsAuthenticated,)
