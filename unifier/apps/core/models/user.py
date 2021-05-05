@@ -1,8 +1,9 @@
 from django.db import models
+from unifier.apps.core.models.base import StandardModelMixin
 from unifier.apps.core.models import Manga, Novel, get_user_model
 
 
-class Favorite(models.Model):
+class Favorite(StandardModelMixin):
     class Meta:
         verbose_name = "Favorite"
         verbose_name_plural = "Favorites"
