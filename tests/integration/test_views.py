@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient, APITransactionTestCase
 from tests.factories.chapter import MangaChapterFactory, NovelChapterFactory
+from tests.factories.favorite import FavoriteFactory
 from tests.factories.manga import MangaFactory
 from tests.factories.novel import NovelFactory
 from tests.factories.platform import PlatformFactory
@@ -271,3 +272,66 @@ class PlatformViewSetTest(APITransactionTestCase):
         assert self.platform.novels.first().title == platform_novel_data[0]["title"]
         assert self.platform.novels.first().year == platform_novel_data[0]["year"]
         assert self.platform.novels.first().chapters_count == platform_novel_data[0]["chapters_count"]
+
+
+class FavoriteApiViewTest(APITransactionTestCase):
+    client = APIClient()
+    unset_client = APIClient()
+
+    def setUp(self):
+        self.unset_manga = MangaFactory.create()
+        self.unset_user = UserFactory.create()
+        self.unset_token = self.unset_user.auth_token.key
+        self.unset_client.credentials(HTTP_AUTHORIZATION=f"Token {self.unset_token}")
+        self.unset_payload = {"id": str(self.unset_manga.id)}
+
+        self.manga = MangaFactory.create()
+        self.manga_payload = {"id": str(self.manga.id)}
+
+        self.novel = NovelFactory.create()
+        self.novel_payload = {"id": str(self.novel.id)}
+
+        self.user = UserFactory.create()
+        self.token = self.user.auth_token.key
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
+        self.favorite = FavoriteFactory(user=self.user, mangas=[self.manga], novels=[self.novel])
+
+    def test_set_manga_as_favorite(self):
+        response = self.client.post(
+            reverse("favorite"), json.dumps(self.manga_payload), content_type="application/json"
+        )
+
+        assert status.HTTP_201_CREATED == response.status_code
+        assert response.json()["message"] == "Item was added to favorites"
+
+    def test_set_novel_as_favorite(self):
+        response = self.client.post(
+            reverse("favorite"), json.dumps(self.novel_payload), content_type="application/json"
+        )
+
+        assert status.HTTP_201_CREATED == response.status_code
+        assert response.json()["message"] == "Item was added to favorites"
+
+    def test_unset_manga_as_favorite(self):
+        response = self.client.delete(
+            reverse("favorite"), json.dumps(self.manga_payload), content_type="application/json"
+        )
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.json()["message"] == "Item was removed from favorites"
+
+    def test_unset_novel_as_favorite(self):
+        response = self.client.delete(
+            reverse("favorite"), json.dumps(self.novel_payload), content_type="application/json"
+        )
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.json()["message"] == "Item was removed from favorites"
+
+    def test_unset_nonexistent_favorite(self):
+        response = self.unset_client.delete(
+            reverse("favorite"), json.dumps(self.unset_payload), content_type="application/json"
+        )
+
+        assert status.HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["error"] == "There isn't any favorite linked to this user"
