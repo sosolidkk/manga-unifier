@@ -1,6 +1,7 @@
 from django.db import models
 from unifier.apps.core.models.base import StandardModelMixin
 from unifier.support.utils import parse_url_as_image_tag
+from unifier.support.manager import HelperManager
 
 
 class Novel(StandardModelMixin):
@@ -8,6 +9,8 @@ class Novel(StandardModelMixin):
         ordering = ("year",)
         verbose_name = "Novel"
         verbose_name_plural = "Novels"
+
+    objects = HelperManager()
 
     title = models.CharField(blank=False, null=False, max_length=256, verbose_name="Novel title")
     year = models.PositiveIntegerField(blank=False, null=False, verbose_name="Launch year")
