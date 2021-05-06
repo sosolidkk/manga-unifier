@@ -9,8 +9,8 @@ repository = "https://github.com/sosolidkk/manga-unifier"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = "^3.1.8"
-djangorestframework = "^3.11.2"
+django = "^3.2.2"
+djangorestframework = "^3.12.4"
 django-filter = "^2.4.0"
 dj_database_url = "^0.5.0"
 whitenoise = "^5.2.0"
@@ -26,9 +26,9 @@ pycodestyle = "^2.6.0"
 isort = "^5.3.2"
 flake8 = "^3.8.3"
 mypy = "^0.782"
-black = "^19.10b0"
+black = "^21.5b0"
 tox = "^3.21.1"
-faker = "^5.6.0"
+faker = "^8.1.2"
 factory-boy = "^3.2.0"
 
 [tool.tox]
