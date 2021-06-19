@@ -4,11 +4,18 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from unifier.apps.core.models import Favorite, Manga, Novel
+from unifier.apps.drf.v1.pagination import BasePagination
+from unifier.apps.drf.v1.serializers import FavoriteSerializer
 
 
-class FavoriteApiView(generics.CreateAPIView, generics.DestroyAPIView):
+class FavoriteApiView(generics.RetrieveAPIView, generics.CreateAPIView, generics.DestroyAPIView):
     queryset = Favorite.objects.all()
+    pagination_class = BasePagination
     permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        serializer = FavoriteSerializer(request.user.favorite)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         manga = Manga.objects.get_or_none(id=request.data["id"])
