@@ -1,6 +1,6 @@
 from django.db import models
-from unifier.apps.core.models.base import StandardModelMixin
 from unifier.apps.core.models import Manga, Novel, get_user_model
+from unifier.apps.core.models.base import StandardModelMixin
 
 
 class Favorite(StandardModelMixin):
