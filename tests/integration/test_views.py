@@ -73,7 +73,13 @@ class MangaChapterRetrieveViewSetTest(APITransactionTestCase):
         response = self.client.get(reverse("manga-chapter-detail", args=[self.manga_chapter.id]))
 
         assert status.HTTP_200_OK == response.status_code
-        assert ("id", "number", "title", "language", "images",) == tuple(response.json().keys())
+        assert (
+            "id",
+            "number",
+            "title",
+            "language",
+            "images",
+        ) == tuple(response.json().keys())
 
 
 class MangaChapterCreateViewSetTest(APITransactionTestCase):
@@ -111,7 +117,9 @@ class MangaChapterCreateViewSetTest(APITransactionTestCase):
 
     def test_create_manga_chapter_passing_dict(self):
         response = self.client.post(
-            reverse("create-mangachapter-list"), json.dumps(self.dict_payload), content_type="application/json",
+            reverse("create-mangachapter-list"),
+            json.dumps(self.dict_payload),
+            content_type="application/json",
         )
 
         assert status.HTTP_201_CREATED == response.status_code
@@ -119,7 +127,9 @@ class MangaChapterCreateViewSetTest(APITransactionTestCase):
 
     def test_create_manga_chapter_passing_list(self):
         response = self.client.post(
-            reverse("create-mangachapter-list"), json.dumps(self.list_payload), content_type="application/json",
+            reverse("create-mangachapter-list"),
+            json.dumps(self.list_payload),
+            content_type="application/json",
         )
 
         assert status.HTTP_201_CREATED == response.status_code
@@ -186,7 +196,13 @@ class NovelChapterRetrieveViewSetTest(APITransactionTestCase):
         response = self.client.get(reverse("novel-chapter-detail", args=[self.novel_chapter.id]))
 
         assert status.HTTP_200_OK == response.status_code
-        assert ("id", "number", "title", "language", "body",) == tuple(response.json().keys())
+        assert (
+            "id",
+            "number",
+            "title",
+            "language",
+            "body",
+        ) == tuple(response.json().keys())
 
 
 class PlatformViewSetTest(APITransactionTestCase):
@@ -335,3 +351,38 @@ class FavoriteApiViewTest(APITransactionTestCase):
 
         assert status.HTTP_400_BAD_REQUEST == response.status_code
         assert response.json()["error"] == "There isn't any favorite linked to this user"
+
+    def test_retrieve_manga_and_novel_favorites(self):
+        response = self.client.get(reverse("favorite"))
+
+        assert status.HTTP_200_OK == response.status_code
+
+        assert len(response.json()["mangas"]) == 1
+        assert len(response.json()["novels"]) == 1
+        assert isinstance(response.json()["mangas"], list)
+        assert isinstance(response.json()["novels"], list)
+        assert (
+            "id",
+            "title",
+            "year",
+            "chapters_count",
+            "author",
+            "description",
+            "rate",
+            "status",
+            "cover",
+            "tags",
+            "manga_url",
+        ) == tuple(response.json()["mangas"][0].keys())
+        assert (
+            "id",
+            "title",
+            "year",
+            "chapters_count",
+            "author",
+            "description",
+            "rate",
+            "status",
+            "cover",
+            "novel_url",
+        ) == tuple(response.json()["novels"][0].keys())
