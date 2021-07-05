@@ -15,9 +15,14 @@ from unifier.support.http import http
 class Command(BaseCommand):
     help = "Mangahost crawler command"
 
+    def add_arguments(self, parser):
+        parser.add_argument("--force", dest="force", const=True, help="Force recapture", nargs="?", type=bool)
+        return super().add_arguments(parser)
+
     def handle(self, *args, **kwargs):
         platform = Platform.objects.get(name="mangahost")
         mangas = platform.mangas.all()
+        to_force = kwargs.get("force")
 
         if platform:
             for manga in mangas:
@@ -50,6 +55,9 @@ class Command(BaseCommand):
                 limit = self._find_chapter_interval(portuguese_chapters_count, manga_info["chapters_count"])
                 limit = abs(manga_info["chapters_count"] - limit)
 
+                if to_force:
+                    limit = 0
+
                 for chapter_item_div in chapter_item_divs[limit:]:
                     data = self._find_chapter_info(chapter_item_div, manga)
                     self.stdout.write(f"Chapter: {data}")
@@ -77,7 +85,7 @@ class Command(BaseCommand):
     def _find_manga_info(self, content: BeautifulSoup) -> dict:
         _manga_info = {}
 
-        box_info = content.find("div", {"class": "box-content alert alert-left w-row"})
+        box_info = content.find("div", {"class": "xlkai alert alert-left w-row"})
         summary_image = content.find("div", {"class": "widget"})
         tags_field = content.find_all("a", {"class": "tag"})
         description_field = content.find("div", {"class": "paragraph"})
