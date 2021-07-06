@@ -10,7 +10,6 @@ class Command(BaseCommand):
         for manga in mangas:
             chapters = manga.manga_chapters.all()
             for chapter in chapters:
-                breakpoint()
                 images = chapter.images
                 _images = [image.replace("filestatic1", "filestatic3") for image in images]
                 chapter.images = _images
