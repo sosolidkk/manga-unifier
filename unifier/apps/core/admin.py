@@ -61,6 +61,7 @@ class MangaAdmin(admin.ModelAdmin):
         "chapters_count",
         "rate",
         "cover_tag",
+        "is_mature",
     )
     list_filter = (
         "created_at",
@@ -106,6 +107,7 @@ class NovelAdmin(admin.ModelAdmin):
         "chapters_count",
         "rate",
         "cover_tag",
+        "is_mature",
     )
     list_filter = (
         "created_at",
