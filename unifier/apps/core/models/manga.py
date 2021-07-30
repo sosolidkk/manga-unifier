@@ -21,6 +21,7 @@ class Manga(StandardModelMixin):
     status = models.CharField(blank=True, null=True, max_length=128, verbose_name="Status")
     cover = models.URLField(blank=True, null=True, max_length=256, verbose_name="Cover URL")
     tags = models.JSONField(blank=True, null=True, default=list, verbose_name="Tags")
+    is_mature = models.BooleanField(default=False, verbose_name="Is Mature")
 
     def __str__(self):
         return f"{self.title} - {self.year}"

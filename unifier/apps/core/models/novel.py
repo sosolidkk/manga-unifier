@@ -20,6 +20,7 @@ class Novel(StandardModelMixin):
     rate = models.DecimalField(blank=False, null=False, max_digits=5, decimal_places=2, verbose_name="Novel rate")
     status = models.CharField(blank=True, null=True, max_length=128, verbose_name="Status")
     cover = models.URLField(blank=True, null=True, max_length=256, verbose_name="Cover URL")
+    is_mature = models.BooleanField(default=False, verbose_name="Is Mature")
 
     def __str__(self):
         return f"{self.title} - {self.year}"
